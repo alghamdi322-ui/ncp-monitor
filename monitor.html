@@ -459,6 +459,8 @@ async function fetchTwitter(){
   return r1.concat(r2);
 }
 
+
+
 async function refreshFeed() {
   showLoading(true);
 
@@ -469,7 +471,6 @@ async function refreshFeed() {
 
   if (hasApi) {
     try {
-      // Group 1: APIs that don't conflict
       const [youtube, alerts, linkedin, twitter] = await Promise.all([
         fetchYouTube(),
         fetchAlerts(),
@@ -477,13 +478,13 @@ async function refreshFeed() {
         fetchTwitter()
       ]);
 
-      // Small delay before search APIs (GNews + Google) to avoid rate limiting
       await new Promise(r => setTimeout(r, 1000));
 
-      // Group 2: Search APIs (more sensitive to rate limits)
-      const news    = await fetchNews();
+      const news = await fetchNews();
+
       await new Promise(r => setTimeout(r, 800));
-      const google  = await fetchGoogle();
+
+      const google = await fetchGoogle();
 
       realMentions = [
         ...youtube,
@@ -502,6 +503,9 @@ async function refreshFeed() {
     }
   }
 
+  // ✅ demoMentions معرّف هنا مباشرة بدل ما يكون متغير خارجي
+  const demoMentions = [];
+
   allMentions = [...realMentions, ...demoMentions]
     .sort((a, b) => a.minsAgo - b.minsAgo);
 
@@ -513,6 +517,8 @@ async function refreshFeed() {
     showToast('📡', `تم رصد ${realMentions.length} إشارة حقيقية ✅`);
   }
 }
+
+
 function updateStatusBadge(isLive){
   const badge=document.getElementById('status-badge');
   const text=document.getElementById('status-text');
