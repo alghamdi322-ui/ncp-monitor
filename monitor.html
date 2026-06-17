@@ -301,21 +301,19 @@ async function fetchNews() {
   if (!GNEWS_API_KEY) return [];
 
   if (Date.now() - newsCache.timestamp < CACHE_DURATION) {
-    console.log('Returning cached news');
     return newsCache.data;
   }
 
   var results = [];
 
   try {
-    var combinedQuery = keywords.slice(0, 3).join(' OR ');
+    // بناء الـ query بدون أي encoding مسبق
+    var query = keywords.slice(0, 3).join(' OR ');
     
-    var targetUrl =
-      'https://gnews.io/api/v4/search?q=' +
-      encodeURIComponent(combinedQuery) +
-      '&lang=ar&country=sa&max=10&apikey=' +
-      GNEWS_API_KEY;
-
+    // نبني الـ target URL يدوياً بدون encodeURIComponent على الـ query
+    var targetUrl = 'https://gnews.io/api/v4/search?q=' + query + '&lang=ar&country=sa&max=10&apikey=' + GNEWS_API_KEY;
+    
+    // الـ proxy يعمل encode للـ targetUrl كاملاً مرة وحدة بس
     var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl);
 
     var res = await fetch(proxyUrl);
@@ -379,14 +377,6 @@ async function fetchNews() {
 
   return results;
 }
-
-
-
-
-
-
-
-
 
 
 
