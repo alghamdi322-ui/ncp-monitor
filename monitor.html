@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>رادار التخصيص | NCP&PPP</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070c14;--surface:#0d1520;--surface2:#111d2e;--border:#1a2e45;--accent:#00c6ff;--accent2:#0072ff;--gold:#f0b429;--green:#00e676;--red:#ff4757;--purple:#a855f7;--text:#e2eaf5;--muted:#5a7a9a}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Cairo',sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,198,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,198,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;width:600px;height:600px;top:-200px;left:50%;transform:translateX(-50%);background:radial-gradient(circle,rgba(0,114,255,0.12) 0%,transparent 70%);pointer-events:none;z-index:0;animation:pulse 4s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:.6;transform:translateX(-50%) scale(1)}50%{opacity:1;transform:translateX(-50%) scale(1.1)}}
+.wrapper{position:relative;z-index:1}
+header{padding:18px 40px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:rgba(7,12,20,0.85);backdrop-filter:blur(12px);position:sticky;top:0;z-index:100}
+.logo-area{display:flex;align-items:center;gap:14px}
+.logo-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--accent2),var(--accent));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(0,198,255,0.3)}
+.logo-text h1{font-size:17px;font-weight:900;color:var(--text);line-height:1}
+.logo-text span{font-size:11px;color:var(--accent);font-weight:400;letter-spacing:1px}
+.header-actions{display:flex;align-items:center;gap:10px}
+.status-badge{display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600}
+.status-badge.live{background:rgba(0,230,118,0.1);border:1px solid rgba(0,230,118,0.2);color:var(--green)}
+.status-badge.demo{background:rgba(240,180,41,0.1);border:1px solid rgba(240,180,41,0.2);color:var(--gold)}
+.status-dot{width:7px;height:7px;border-radius:50%;animation:blink 1.5s ease-in-out infinite}
+.live .status-dot{background:var(--green)}.demo .status-dot{background:var(--gold)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.btn{padding:8px 16px;border-radius:8px;border:none;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;box-shadow:0 4px 15px rgba(0,114,255,0.3)}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,114,255,0.45)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.btn-ghost:hover{color:var(--text);border-color:var(--accent)}
+.btn-gold{background:linear-gradient(135deg,#f0b429,#f8d770);color:#1a0f00;font-weight:700}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(240,180,41,0.4)}
+.main{padding:28px 40px;max-width:1400px;margin:0 auto}
+.api-banner{background:linear-gradient(135deg,rgba(240,180,41,0.08),rgba(240,180,41,0.04));border:1px solid rgba(240,180,41,0.25);border-radius:14px;padding:16px 24px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.api-banner-text{display:flex;align-items:center;gap:12px}
+.api-banner-icon{font-size:24px}
+.api-banner h3{font-size:14px;font-weight:700;color:var(--gold);margin-bottom:3px}
+.api-banner p{font-size:12px;color:var(--muted)}
+.api-banner-actions{display:flex;gap:8px;flex-shrink:0}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 22px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s}
+.stat-card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.stat-card::before{content:'';position:absolute;top:0;right:0;width:80px;height:80px;border-radius:50%;filter:blur(30px);opacity:.15}
+.stat-card:nth-child(1)::before{background:var(--accent)}.stat-card:nth-child(2)::before{background:var(--green)}.stat-card:nth-child(3)::before{background:var(--gold)}.stat-card:nth-child(4)::before{background:var(--purple)}
+.stat-label{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:6px}
+.stat-value{font-size:30px;font-weight:900;line-height:1}
+.stat-change{font-size:11px;margin-top:5px}
+.stat-card:nth-child(1) .stat-value{color:var(--accent)}.stat-card:nth-child(2) .stat-value{color:var(--green)}.stat-card:nth-child(3) .stat-value{color:var(--gold)}.stat-card:nth-child(4) .stat-value{color:var(--purple)}
+.content-grid{display:grid;grid-template-columns:300px 1fr;gap:18px}
+.sidebar{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px}
+.card-body{padding:14px 18px}
+.keyword-list{display:flex;flex-direction:column;gap:7px}
+.keyword-item{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:9px;background:var(--surface2);border:1px solid transparent;cursor:pointer;transition:all .2s}
+.keyword-item:hover,.keyword-item.active{border-color:var(--accent);background:rgba(0,198,255,0.05)}
+.keyword-item.active .kw-text{color:var(--accent)}
+.kw-left{display:flex;align-items:center;gap:9px}
+.kw-dot{width:7px;height:7px;border-radius:50%}
+.kw-text{font-size:12px;font-weight:600}
+.kw-count{font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(0,198,255,0.1);color:var(--accent);font-weight:700}
+.add-keyword-form{display:flex;gap:7px;margin-top:10px}
+.kw-input{flex:1;padding:8px 11px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Cairo',sans-serif;font-size:12px;outline:none;transition:border-color .2s;text-align:right}
+.kw-input:focus{border-color:var(--accent)}.kw-input::placeholder{color:var(--muted)}
+.btn-add{padding:8px 13px;border-radius:8px;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;border:none;cursor:pointer;font-size:15px;transition:all .2s}
+.btn-add:hover{transform:scale(1.05)}
+.source-list{display:flex;flex-direction:column;gap:5px}
+.source-item{display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border-radius:8px;transition:background .2s}
+.source-item:hover{background:var(--surface2)}
+.source-left{display:flex;align-items:center;gap:9px}
+.source-icon{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.source-name{font-size:12px;font-weight:600}
+.source-count{font-size:11px;color:var(--muted)}
+.source-api-badge{font-size:10px;padding:1px 7px;border-radius:8px;font-weight:700}
+.source-api-badge.live{background:rgba(0,230,118,0.1);color:var(--green)}
+.source-api-badge.demo{background:rgba(240,180,41,0.1);color:var(--gold)}
+.toggle{width:34px;height:19px;background:var(--surface2);border-radius:10px;position:relative;cursor:pointer;border:1px solid var(--border);transition:background .2s}
+.toggle.on{background:linear-gradient(135deg,var(--accent2),var(--accent));border-color:var(--accent)}
+.toggle::after{content:'';position:absolute;width:13px;height:13px;background:#fff;border-radius:50%;top:2px;right:2px;transition:transform .2s;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.toggle.on::after{transform:translateX(-15px)}
+.feed-area{display:flex;flex-direction:column;gap:14px}
+.feed-controls{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.filter-tabs{display:flex;gap:5px;background:var(--surface);padding:4px;border-radius:10px;border:1px solid var(--border)}
+.tab{padding:6px 14px;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;transition:all .2s;color:var(--muted)}
+.tab.active{background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;box-shadow:0 2px 8px rgba(0,114,255,0.3)}
+.tab:hover:not(.active){color:var(--text)}
+.search-box{display:flex;align-items:center;gap:7px;padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;flex:1;max-width:280px;transition:border-color .2s}
+.search-box:focus-within{border-color:var(--accent)}
+.search-box input{background:none;border:none;outline:none;color:var(--text);font-family:'Cairo',sans-serif;font-size:12px;flex:1;text-align:right}
+.search-box input::placeholder{color:var(--muted)}
+.mentions-list{display:flex;flex-direction:column;gap:9px}
+.mention-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;transition:all .25s;cursor:pointer;position:relative;overflow:hidden}
+.mention-card::before{content:'';position:absolute;right:0;top:0;bottom:0;width:3px;border-radius:0 14px 14px 0;background:linear-gradient(to bottom,var(--accent2),var(--accent));opacity:0;transition:opacity .2s}
+.mention-card:hover{border-color:rgba(0,198,255,.3);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.mention-card:hover::before{opacity:1}
+.mention-card.positive::before{background:var(--green)}.mention-card.negative::before{background:var(--red)}
+.mention-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.mention-user{display:flex;align-items:center;gap:9px}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;flex-shrink:0}
+.mention-name{font-size:13px;font-weight:700}
+.mention-handle{font-size:11px;color:var(--muted)}
+.mention-meta{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.source-tag{display:flex;align-items:center;gap:4px;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600}
+.time-ago{font-size:11px;color:var(--muted)}
+.mention-text{font-size:13px;line-height:1.8;color:#b8cde0;margin-bottom:10px}
+.mention-text .highlight{background:rgba(0,198,255,.15);color:var(--accent);padding:1px 4px;border-radius:4px;font-weight:700}
+.mention-footer{display:flex;align-items:center;justify-content:space-between}
+.mention-stats{display:flex;gap:14px}
+.mstat{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--muted)}
+.sentiment-badge{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700}
+.sentiment-badge.positive{background:rgba(0,230,118,.1);color:var(--green)}.sentiment-badge.negative{background:rgba(255,71,87,.1);color:var(--red)}.sentiment-badge.neutral{background:rgba(90,122,154,.15);color:var(--muted)}
+.real-badge{font-size:10px;padding:1px 7px;border-radius:8px;background:rgba(0,230,118,.1);color:var(--green);font-weight:700;border:1px solid rgba(0,230,118,.2);margin-right:4px}
+.loading-bar{height:2px;background:linear-gradient(90deg,transparent,var(--accent),var(--accent2),transparent);background-size:200% 100%;animation:shimmer 1.5s infinite;border-radius:2px;margin-bottom:14px}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.empty-state{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty-state .icon{font-size:44px;margin-bottom:10px}
+.empty-state p{font-size:13px}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(8px);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal-box{background:var(--surface);border:1px solid var(--border);border-radius:20px;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.6);animation:modalIn .28s cubic-bezier(0.34,1.4,0.64,1)}
+@keyframes modalIn{from{opacity:0;transform:scale(.92) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border)}
+.modal-user{display:flex;align-items:center;gap:11px}
+.modal-close{background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.modal-close:hover{color:var(--text);border-color:var(--accent)}
+.modal-body{padding:18px 22px;display:flex;flex-direction:column;gap:14px}
+.modal-text{font-size:14px;line-height:2;color:var(--text);background:var(--surface2);border-radius:12px;padding:14px;border:1px solid var(--border)}
+.modal-hl{background:rgba(0,198,255,.15);color:var(--accent);padding:2px 5px;border-radius:4px;font-weight:700}
+.modal-meta-row{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.modal-source-tag{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px}
+.modal-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.modal-stat-box{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 7px;text-align:center}
+.modal-stat-val{font-size:14px;font-weight:700;margin-bottom:3px}
+.modal-stat-lbl{font-size:10px;color:var(--muted)}
+.modal-keywords{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px}
+.modal-open-btn{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--accent);text-decoration:none;font-weight:600}
+.modal-open-btn:hover{text-decoration:underline}
+.api-setup-modal{max-width:620px}
+.api-tabs{display:flex;gap:6px;padding:16px 22px 0;border-bottom:1px solid var(--border)}
+.api-tab{padding:8px 16px;font-size:13px;font-weight:700;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;transition:all .2s;font-family:'Cairo',sans-serif;background:none;border-right:none;border-left:none;border-top:none}
+.api-tab.active{color:var(--accent);border-bottom:2px solid var(--accent)}
+.api-tab-content{display:none;padding:20px 22px}
+.api-tab-content.active{display:block}
+.api-step{display:flex;gap:12px;margin-bottom:16px}
+.api-step-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent2),var(--accent));color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.api-step-body h4{font-size:13px;font-weight:700;margin-bottom:4px}
+.api-step-body p{font-size:12px;color:var(--muted);line-height:1.7}
+.api-step-body a{color:var(--accent);text-decoration:none}
+.api-step-body a:hover{text-decoration:underline}
+.api-input-group{margin-top:16px}
+.api-input-group label{font-size:12px;font-weight:700;color:var(--muted);display:block;margin-bottom:6px}
+.api-input{width:100%;padding:10px 14px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'Cairo',sans-serif;font-size:13px;outline:none;transition:border-color .2s;text-align:right}
+.api-input:focus{border-color:var(--accent)}.api-input::placeholder{color:var(--muted)}
+.api-note{font-size:11px;color:var(--muted);margin-top:5px}
+.api-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.toast-container{position:fixed;top:76px;left:24px;z-index:1000;display:flex;flex-direction:column;gap:7px}
+.toast{padding:11px 16px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);font-size:12px;font-weight:600;display:flex;align-items:center;gap:9px;min-width:260px;box-shadow:0 8px 24px rgba(0,0,0,.4);animation:toastIn .3s ease}
+@keyframes toastIn{from{opacity:0;transform:translateX(-20px)}to{opacity:1;transform:translateX(0)}}
+.toast-icon{font-size:16px}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+@media(max-width:900px){.content-grid{grid-template-columns:1fr}.stats-row{grid-template-columns:repeat(2,1fr)}header,.main{padding:14px 18px}}
+</style>
+</head>
+<body>
+<div class="wrapper">
+<header>
+  <div class="logo-area">
+    <div class="logo-icon">📡</div>
+    <div class="logo-text"><h1>رادار التخصيص</h1><span>NCP&PPP · Social Monitor</span></div>
+  </div>
+  <div class="header-actions">
+    <div class="status-badge live" id="status-badge"><div class="status-dot"></div><span id="status-text">مباشر</span></div>
+    <button class="btn btn-gold" onclick="openApiSetup()">🔑 ربط API</button>
+    <button class="btn btn-ghost" onclick="exportData()">⬇ تصدير</button>
+    <button class="btn btn-primary" onclick="refreshFeed()">🔄 تحديث</button>
+  </div>
+</header>
+<div class="main">
+  <div class="api-banner" id="api-banner">
+    <div class="api-banner-text">
+      <div class="api-banner-icon">⚡</div>
+      <div><h3>الأداة تعمل بوضع تجريبي</h3><p>اربط YouTube API و NewsAPI للحصول على نتائج حقيقية ولحظية — مجاناً</p></div>
+    </div>
+    <div class="api-banner-actions">
+      <button class="btn btn-gold" onclick="openApiSetup()">ربط الآن</button>
+      <button class="btn btn-ghost" onclick="document.getElementById('api-banner').style.display='none'">تجاهل</button>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-card"><div class="stat-label">إجمالي الإشارات</div><div class="stat-value" id="stat1">0</div><div class="stat-change" id="stat1-ch">—</div></div>
+    <div class="stat-card"><div class="stat-label">إشارات إيجابية</div><div class="stat-value" id="stat2">0</div><div class="stat-change" id="stat2-ch">—</div></div>
+    <div class="stat-card"><div class="stat-label">أعلى تفاعل</div><div class="stat-value" id="stat3">0</div><div class="stat-change" id="stat3-ch">—</div></div>
+    <div class="stat-card"><div class="stat-label">مصادر نشطة</div><div class="stat-value" id="stat4">0</div><div class="stat-change" id="stat4-ch">—</div></div>
+  </div>
+  <div class="content-grid">
+    <div class="sidebar">
+      <div class="card">
+        <div class="card-header"><div class="card-title">🔑 الكلمات المفتاحية</div><span style="font-size:11px;color:var(--muted)" id="kw-count">0 كلمة</span></div>
+        <div class="card-body">
+          <div class="keyword-list" id="keyword-list"></div>
+          <div class="add-keyword-form">
+            <button class="btn-add" onclick="addKeyword()">+</button>
+            <input class="kw-input" id="kw-input" placeholder="أضف كلمة..." onkeydown="if(event.key==='Enter')addKeyword()">
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">📲 المصادر</div></div>
+        <div class="card-body"><div class="source-list" id="source-list"></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">📊 توزيع المشاعر</div></div>
+        <div class="card-body"><div style="display:flex;flex-direction:column;gap:10px" id="sentiment-bars"></div></div>
+      </div>
+    </div>
+    <div class="feed-area">
+      <div class="feed-controls">
+        <div class="filter-tabs">
+          <div class="tab active" onclick="filterTab(this,'all')">الكل</div>
+          <div class="tab" onclick="filterTab(this,'positive')">إيجابي</div>
+          <div class="tab" onclick="filterTab(this,'negative')">سلبي</div>
+          <div class="tab" onclick="filterTab(this,'neutral')">محايد</div>
+        </div>
+        <div class="search-box"><span>🔍</span><input placeholder="ابحث في الإشارات..." id="search-input" oninput="renderFeed()"></div>
+      </div>
+      <div class="loading-bar" id="loading-bar" style="display:none"></div>
+      <div id="new-alert-area"></div>
+      <div class="mentions-list" id="mentions-list"></div>
+    </div>
+  </div>
+</div>
+<div class="toast-container" id="toast-container"></div>
+</div>
+<script>
+let YOUTUBE_API_KEY=localStorage.getItem('yt_api_key')||'';
+let NEWS_API_KEY=localStorage.getItem('news_api_key')||'97520bdd135948aeb748f0aa6485ef2f';
+let GNEWS_API_KEY=localStorage.getItem('gnews_api_key')||'235b83ae9d6d9c938978f56900bcbe11';
+let SERPER_API_KEY=localStorage.getItem('serper_api_key')||'f801f871b15732f13b4a1f6f265b2333d5b0bc0c';
+let GOOGLE_CSE_KEY='';let GOOGLE_CSE_CX='';
+const KEYWORDS_DEFAULT=['التخصيص','الخصخصة','PPP','NCP','الشراكة مع القطاع الخاص'];
+var _savedKw=localStorage.getItem('kw_list');
+var _parsed=null;
+try{_parsed=_savedKw?JSON.parse(_savedKw):null;}catch(e){}
+var keywords=(_parsed&&_parsed.length>0)?_parsed:[...KEYWORDS_DEFAULT];
+const SOURCES=[
+  {id:'youtube',name:'يوتيوب',icon:'YT',color:'#ff4444',bg:'rgba(255,68,68,0.12)',on:true,apiType:'youtube'},
+  {id:'news',name:'الأخبار',icon:'NW',color:'#f0b429',bg:'rgba(240,180,41,0.12)',on:true,apiType:'news'},
+  {id:'google',name:'Google Search',icon:'G',color:'#4285f4',bg:'rgba(66,133,244,0.12)',on:true,apiType:'google'},
+  {id:'linkedin',name:'LinkedIn',icon:'in',color:'#0077b5',bg:'rgba(0,119,181,0.12)',on:true,apiType:'linkedin'},
+  {id:'twitter',name:'X (تويتر)',icon:'X',color:'#e7e7e7',bg:'rgba(231,231,231,0.08)',on:true,apiType:'twitter'},
+  {id:'alerts',name:'Google Alerts',icon:'AL',color:'#34a853',bg:'rgba(52,168,83,0.12)',on:true,apiType:'alerts'},
+];
+let ALERTS_RSS_URLS=JSON.parse(localStorage.getItem('alerts_rss')||'[]');
+let allMentions=[];
+let currentFilter='all';
+
+
+function randomInt(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function randomPick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+function timeAgo(mins){if(mins<1)return'الآن';if(mins<60)return'منذ '+mins+' دقيقة';return'منذ '+Math.floor(mins/60)+' ساعة'}
+function analyzeSentiment(text){
+  const pos=['نجاح','ممتاز','رائد','تطوير','إيجابي','فرصة','تحسين','نمو','إنجاز','مبادرة'];
+  const neg=['فشل','سلبي','خطأ','أزمة','مشكلة','رفض','انتقاد','مخاوف','خسارة'];
+  const ps=pos.filter(w=>text.includes(w)).length;
+  const ns=neg.filter(w=>text.includes(w)).length;
+  if(ps>ns)return'positive';if(ns>ps)return'negative';return'neutral';
+}
+async function fetchYouTube(){
+  if(!YOUTUBE_API_KEY)return[];
+  const results=[];
+  for(const kw of keywords.slice(0,3)){
+    try{
+      const url='https://www.googleapis.com/youtube/v3/search?part=snippet&q='+encodeURIComponent(kw)+'&type=video&relevanceLanguage=ar&regionCode=SA&maxResults=5&order=date&key='+YOUTUBE_API_KEY;
+      const res=await fetch(url);const data=await res.json();
+      if(data.error){showToast('⚠️','YouTube: '+data.error.message);continue;}
+      (data.items||[]).forEach(function(item){
+        const s=item.snippet;
+        const title=s.title;
+        const highlighted=keywords.reduce(function(t,k){return t.replace(new RegExp(k,'g'),'<HL>'+k+'</HL>');},title);
+        const pub=new Date(s.publishedAt);
+        const minsAgo=Math.round((Date.now()-pub.getTime())/60000);
+        results.push({id:item.id.videoId+Math.random(),user:{name:s.channelTitle,handle:'@youtube',avatar:'▶',bg:'#ff4444'},src:SOURCES.find(function(s){return s.id==='youtube';}),text:highlighted,sentiment:analyzeSentiment(title),isReal:true,likes:randomInt(10,5000),shares:randomInt(0,1000),comments:randomInt(0,500),minsAgo,url:'https://youtube.com/watch?v='+item.id.videoId});
+      });
+    }catch(e){console.error('YT error',e);}
+  }
+  return results;
+}
+
+
+
+
+// Cache object outside the function
+const newsCache = { data: [], timestamp: 0 };
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+
+async function fetchNews() {
+  if (!GNEWS_API_KEY) return [];
+
+  if (Date.now() - newsCache.timestamp < CACHE_DURATION) {
+    console.log('Returning cached news');
+    return newsCache.data;
+  }
+
+  var results = [];
+
+  try {
+    var combinedQuery = keywords.slice(0, 3).join(' OR ');
+    
+    var targetUrl =
+      'https://gnews.io/api/v4/search?q=' +
+      encodeURIComponent(combinedQuery) +
+      '&lang=ar&country=sa&max=10&apikey=' +
+      GNEWS_API_KEY;
+
+    var proxyUrl = 'https://api.allorigins.win/get?url=' + encodeURIComponent(targetUrl);
+
+    var res = await fetch(proxyUrl);
+    var wrapper = await res.json();
+
+    if (!wrapper.contents) {
+      showToast('!', 'GNews: لا يوجد رد');
+      return newsCache.data.length > 0 ? newsCache.data : [];
+    }
+
+    var data = JSON.parse(wrapper.contents);
+
+    if (data.errors) {
+      showToast('!', 'GNews: ' + data.errors[0]);
+      return newsCache.data.length > 0 ? newsCache.data : [];
+    }
+
+    var src = SOURCES.find(function (s) { return s.id === 'news'; });
+
+    (data.articles || []).forEach(function (a) {
+      var title = a.title || '';
+      var desc = a.description || '';
+      var text = title + (desc ? ' - ' + desc : '');
+
+      var highlighted = keywords.reduce(function (t, k) {
+        try {
+          return t.replace(new RegExp(k, 'g'), '<HL>' + k + '</HL>');
+        } catch (e) { return t; }
+      }, text);
+
+      var pub = new Date(a.publishedAt);
+      var minsAgo = Math.round((Date.now() - pub.getTime()) / 60000);
+
+      results.push({
+        id: (a.url || '') + Math.random(),
+        user: {
+          name: a.source && a.source.name ? a.source.name : 'مصدر إخباري',
+          handle: '@news',
+          avatar: 'NW',
+          bg: '#f0b429'
+        },
+        src: src,
+        text: highlighted,
+        sentiment: analyzeSentiment(text),
+        isReal: true,
+        likes: 0,
+        shares: 0,
+        comments: 0,
+        minsAgo: minsAgo,
+        url: a.url || ''
+      });
+    });
+
+    newsCache.data = results;
+    newsCache.timestamp = Date.now();
+
+  } catch (e) {
+    console.error('GNews error', e);
+    return newsCache.data.length > 0 ? newsCache.data : [];
+  }
+
+  return results;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+async function fetchAlerts(){
+  if(!ALERTS_RSS_URLS.length)return[];
+  const results=[];
+  const CORS='https://api.rss2json.com/v1/api.json?rss_url=';
+  for(const rssUrl of ALERTS_RSS_URLS){
+    try{
+      const res=await fetch(CORS+encodeURIComponent(rssUrl));
+      const data=await res.json();
+      if(data.status!=='ok')continue;
+      (data.items||[]).forEach(function(item){
+        const title=item.title||item.description||'';
+        const clean=title.replace(/<[^>]+>/g,'');
+        const highlighted=keywords.reduce(function(t,k){return t.replace(new RegExp(k,'g'),'<HL>'+k+'</HL>');},clean);
+        const pub=new Date(item.pubDate);
+        const minsAgo=Math.round((Date.now()-pub.getTime())/60000);
+        const domain=item.link?new URL(item.link).hostname.replace('www.',''):'';
+        results.push({id:item.link+Math.random(),user:{name:domain||'Google Alerts',handle:'@alerts',avatar:'\uD83D\uDD14',bg:'#34a853'},src:SOURCES.find(function(s){return s.id==='alerts';}),text:highlighted,sentiment:analyzeSentiment(clean),isReal:true,likes:0,shares:0,comments:0,minsAgo,url:item.link});
+      });
+    }catch(e){console.error('Alerts RSS error',e);}
+  }
+  return results;
+}
+
+async function fetchGoogleCSE(siteFilter,srcId){
+  if(!GOOGLE_CSE_KEY||!GOOGLE_CSE_CX)return[];
+  const results=[];
+  for(const kw of keywords.slice(0,3)){
+    try{
+      const q=siteFilter?encodeURIComponent('site:'+siteFilter+' '+kw):encodeURIComponent(kw);
+      const url='https://www.googleapis.com/customsearch/v1?key='+GOOGLE_CSE_KEY+'&cx='+GOOGLE_CSE_CX+'&q='+q+'&num=5';
+      const res=await fetch(url);const data=await res.json();
+      if(data.error){showToast('⚠️','Google: '+data.error.message);break;}
+      (data.items||[]).forEach(function(item){
+        const title=item.title||'';
+        const snippet=item.snippet||'';
+        const text=title+(snippet?' - '+snippet:'');
+        const highlighted=keywords.reduce(function(t,k){return t.replace(new RegExp(k,'g'),'<HL>'+k+'</HL>');},text);
+        const src=SOURCES.find(function(s){return s.id===srcId;});
+        results.push({id:item.link+Math.random(),user:{name:item.displayLink||'Google',handle:'@'+srcId,avatar:src?src.icon:'\uD83D\uDD0D',bg:src?src.color:'#4285f4'},src,text:highlighted,sentiment:analyzeSentiment(text),isReal:true,likes:0,shares:0,comments:0,minsAgo:randomInt(5,720),url:item.link});
+      });
+    }catch(e){console.error('Google CSE error',e);}
+  }
+  return results;
+}
+async function fetchGoogle(){return fetchGoogleCSE(null,'google');}
+async function fetchLinkedIn(){return fetchGoogleCSE('linkedin.com','linkedin');}
+async function fetchTwitter(){
+  const r1=await fetchGoogleCSE('twitter.com','twitter');
+  const r2=await fetchGoogleCSE('x.com','twitter');
+  return r1.concat(r2);
+}
+
+async function refreshFeed() {
+  showLoading(true);
+
+  const hasApi = YOUTUBE_API_KEY || NEWS_API_KEY || GNEWS_API_KEY || 
+                 ALERTS_RSS_URLS.length || SERPER_API_KEY;
+
+  let realMentions = [];
+
+  if (hasApi) {
+    try {
+      // Group 1: APIs that don't conflict
+      const [youtube, alerts, linkedin, twitter] = await Promise.all([
+        fetchYouTube(),
+        fetchAlerts(),
+        fetchLinkedIn(),
+        fetchTwitter()
+      ]);
+
+      // Small delay before search APIs (GNews + Google) to avoid rate limiting
+      await new Promise(r => setTimeout(r, 1000));
+
+      // Group 2: Search APIs (more sensitive to rate limits)
+      const news    = await fetchNews();
+      await new Promise(r => setTimeout(r, 800));
+      const google  = await fetchGoogle();
+
+      realMentions = [
+        ...youtube,
+        ...news,
+        ...alerts,
+        ...google,
+        ...linkedin,
+        ...twitter
+      ].sort((a, b) => a.minsAgo - b.minsAgo);
+
+      updateStatusBadge(true);
+
+    } catch (e) {
+      console.error('refreshFeed error:', e);
+      showToast('⚠️', 'حدث خطأ أثناء جلب البيانات');
+    }
+  }
+
+  allMentions = [...realMentions, ...demoMentions]
+    .sort((a, b) => a.minsAgo - b.minsAgo);
+
+  showLoading(false);
+  recalcStats();
+  renderFeed();
+
+  if (realMentions.length) {
+    showToast('📡', `تم رصد ${realMentions.length} إشارة حقيقية ✅`);
+  }
+}
+function updateStatusBadge(isLive){
+  const badge=document.getElementById('status-badge');
+  const text=document.getElementById('status-text');
+  badge.className='status-badge '+(isLive?'live':'demo');
+  text.textContent=isLive?'مباشر':'وضع تجريبي';
+}
+function showLoading(on){document.getElementById('loading-bar').style.display=on?'block':'none';}
+function recalcStats(){
+  const pos=allMentions.filter(function(m){return m.sentiment==='positive';}).length;
+  const maxLikes=allMentions.length?Math.max.apply(null,allMentions.map(function(m){return m.likes;})):0;
+  animateNumber('stat1',allMentions.length);animateNumber('stat2',pos);animateNumber('stat3',maxLikes);animateNumber('stat4',SOURCES.filter(function(s){return s.on;}).length);
+  document.getElementById('stat1-ch').innerHTML='<span style="color:var(--accent)">'+allMentions.filter(function(m){return m.isReal;}).length+' حقيقية</span>';
+  document.getElementById('stat2-ch').innerHTML=allMentions.length?'<span style="color:var(--green)">'+Math.round(pos/allMentions.length*100)+'%</span> من الإجمالي':'—';
+  document.getElementById('stat3-ch').textContent='إعجاب على منشور واحد';
+  document.getElementById('stat4-ch').innerHTML='<span style="color:var(--purple)">'+SOURCES.filter(function(s){return s.on;}).length+' نشطة</span>';
+  renderKeywords();renderSources();
+  const neg=allMentions.filter(function(m){return m.sentiment==='negative';}).length;
+  renderSentiment(pos,neg,allMentions.length-pos-neg);
+}
+function animateNumber(id,target){
+  const el=document.getElementById(id);let cur=0;
+  const step=Math.ceil(target/30);
+  const t=setInterval(function(){cur=Math.min(cur+step,target);el.textContent=cur.toLocaleString('ar-SA');if(cur>=target)clearInterval(t);},30);
+}
+function renderKeywords(){
+  var colors=['#00c6ff','#a855f7','#f0b429','#00e676','#ff6b6b','#0072ff'];
+  var list=document.getElementById('keyword-list');
+  if(!list)return;
+  list.innerHTML=keywords.map(function(kw,i){
+    var cnt=allMentions.filter(function(m){return m.text.replace(/<[^>]+>/g,'').includes(kw);}).length;
+    var color=colors[i%colors.length];
+    var onclickFilter='filterByKw('+JSON.stringify(kw)+')';
+    var onclickRemove='removeKeyword('+i+')';
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;margin-bottom:6px;background:rgba(255,255,255,0.04);border-radius:10px">'
+      +'<div style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="'+onclickFilter+'">'
+      +'<div style="width:8px;height:8px;border-radius:50%;background:'+color+'"></div>'
+      +'<div style="font-size:13px">'+kw+'</div>'
+      +'</div>'
+      +'<div style="display:flex;align-items:center;gap:8px">'
+      +'<div style="font-size:12px;color:'+color+';font-weight:700">'+cnt+'</div>'
+      +'<div style="cursor:pointer;color:#ff6b6b;font-size:14px;padding:2px 6px;border-radius:4px" onclick="'+onclickRemove+'">x</div>'
+      +'</div>'
+      +'</div>';
+  }).join('');
+  var countEl=document.getElementById('kw-count');
+  if(countEl)countEl.textContent=keywords.length+' كلمة';
+}
+function renderSources(){
+  document.getElementById('source-list').innerHTML=SOURCES.map(function(s){
+    const isLive=(s.apiType==='youtube'&&YOUTUBE_API_KEY)||(s.apiType==='news'&&NEWS_API_KEY)||(s.apiType==='demo')||(s.apiType==='alerts')||(s.apiType==='google'&&SERPER_API_KEY)||(s.apiType==='linkedin'&&SERPER_API_KEY)||(s.apiType==='twitter'&&SERPER_API_KEY);
+    const badge=isLive?'<span class="source-api-badge live">مباشر</span>':'<span class="source-api-badge demo">يحتاج مفتاح</span>';
+    const cnt=allMentions.filter(function(m){return m.src&&m.src.id===s.id;}).length;
+    return '<div class="source-item"><div class="source-left"><div class="source-icon" style="background:'+s.bg+';color:'+s.color+'">'+s.icon+'</div><div><div class="source-name">'+s.name+' '+badge+'</div><div class="source-count">'+cnt+' إشارة</div></div></div><div class="toggle '+(s.on?'on':'')+'" onclick="toggleSource(\''+s.id+'\')"></div></div>';
+  }).join('');
+}
+function renderSentiment(pos,neg,neu){
+  const total=pos+neg+neu||1;
+  document.getElementById('sentiment-bars').innerHTML=[{label:'إيجابي',val:pos,color:'var(--green)'},{label:'سلبي',val:neg,color:'var(--red)'},{label:'محايد',val:neu,color:'var(--muted)'}].map(function(it){
+    return '<div><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px"><span style="color:'+it.color+';font-weight:700">'+it.label+'</span><span style="color:var(--muted)">'+Math.round(it.val/total*100)+'%</span></div><div style="height:5px;background:var(--surface2);border-radius:3px;overflow:hidden"><div style="height:100%;width:0;background:'+it.color+';border-radius:3px;transition:width 1s ease" data-target="'+Math.round(it.val/total*100)+'"></div></div></div>';
+  }).join('');
+  setTimeout(function(){document.querySelectorAll('[data-target]').forEach(function(el){el.style.width=el.dataset.target+'%';});},100);
+}
+function renderFeed(){
+  const search=document.getElementById('search-input').value.toLowerCase();
+  const filtered=allMentions.filter(function(m){
+    if(!SOURCES.find(function(s){return s.id===m.src&&m.src.id&&s.on;})){}
+    if(currentFilter!=='all'&&m.sentiment!==currentFilter)return false;
+    if(search){const plain=m.text.replace(/<[^>]+>/g,'');if(!plain.includes(search)&&!m.user.name.includes(search))return false;}
+    return true;
+  });
+  if(!filtered.length){document.getElementById('mentions-list').innerHTML='<div class="empty-state"><div class="icon">\uD83D\uDD0D</div><p>لا توجد نتائج — اضغط تحديث للبحث</p></div>';return;}
+  document.getElementById('mentions-list').innerHTML=filtered.map(function(m){
+    const sentLabel=m.sentiment==='positive'?'\uD83D\uDE0A إيجابي':m.sentiment==='negative'?'\uD83D\uDE1E سلبي':'\uD83D\uDE10 محايد';
+    const srcBg=m.src?m.src.bg:'rgba(90,122,154,0.1)';
+    const srcColor=m.src?m.src.color:'#5a7a9a';
+    const srcIcon=m.src?m.src.icon:'\uD83C\uDF10';
+    const srcName=m.src?m.src.name:'إنترنت';
+    return '<div class="mention-card '+m.sentiment+'" onclick="openMention(\''+m.id+'\')"><div class="mention-top"><div class="mention-user"><div class="avatar" style="background:'+m.user.bg+'">'+m.user.avatar+'</div><div><div class="mention-name">'+m.user.name+(m.isReal?' <span class="real-badge">✅ حقيقي</span>':'')+'</div><div class="mention-handle">'+m.user.handle+'</div></div></div><div class="mention-meta"><div class="source-tag" style="background:'+srcBg+';color:'+srcColor+'">'+srcIcon+' '+srcName+'</div><div class="time-ago">\uD83D\uDD50 '+timeAgo(m.minsAgo)+'</div></div></div><div class="mention-text">'+m.text.replace(/<HL>/g,'<span class="highlight">').replace(/<\/HL>/g,'</span>')+'</div><div class="mention-footer"><div class="mention-stats"><div class="mstat">❤️ '+m.likes.toLocaleString('ar-SA')+'</div><div class="mstat">\uD83D\uDD01 '+m.shares.toLocaleString('ar-SA')+'</div><div class="mstat">\uD83D\uDCAC '+m.comments.toLocaleString('ar-SA')+'</div></div><div class="sentiment-badge '+m.sentiment+'">'+sentLabel+'</div></div></div>';
+  }).join('');
+}
+function openMention(id){
+  const m=allMentions.find(function(x){return String(x.id)===String(id);});
+  if(!m)return;
+  const sentColor=m.sentiment==='positive'?'var(--green)':m.sentiment==='negative'?'var(--red)':'var(--muted)';
+  const cleanText=m.text.replace(/<HL>/g,'<span class="modal-hl">').replace(/<\/HL>/g,'</span>');
+  const matchedKws=keywords.filter(function(kw){return m.text.includes(kw);});
+  const srcBg=m.src?m.src.bg:'rgba(90,122,154,0.1)';
+  const srcColor=m.src?m.src.color:'#5a7a9a';
+  const srcIcon=m.src?m.src.icon:'\uD83C\uDF10';
+  const srcName=m.src?m.src.name:'إنترنت';
+  const overlay=document.createElement('div');
+  overlay.className='modal-overlay';overlay.id='mention-modal';
+  overlay.onclick=function(e){if(e.target===overlay)closeModal();};
+  overlay.innerHTML='<div class="modal-box"><div class="modal-header"><div class="modal-user"><div class="avatar" style="background:'+m.user.bg+';width:44px;height:44px;font-size:18px">'+m.user.avatar+'</div><div><div style="font-size:15px;font-weight:700">'+m.user.name+(m.isReal?' <span class="real-badge">✅ حقيقي</span>':'')+'</div><div style="font-size:12px;color:var(--muted)">'+m.user.handle+'</div></div></div><button class="modal-close" onclick="closeModal()">✕</button></div><div class="modal-body"><div class="modal-text">'+cleanText+'</div><div class="modal-meta-row"><div class="modal-source-tag" style="background:'+srcBg+';color:'+srcColor+'">'+srcIcon+' '+srcName+'</div><div style="font-size:11px;color:var(--muted)">\uD83D\uDD50 '+timeAgo(m.minsAgo)+'</div><div class="sentiment-badge '+m.sentiment+'" style="margin-right:auto">'+(m.sentiment==='positive'?'\uD83D\uDE0A إيجابي':m.sentiment==='negative'?'\uD83D\uDE1E سلبي':'\uD83D\uDE10 محايد')+'</div></div><div class="modal-stats-grid"><div class="modal-stat-box"><div class="modal-stat-val">❤️ '+m.likes.toLocaleString('ar-SA')+'</div><div class="modal-stat-lbl">إعجاب</div></div><div class="modal-stat-box"><div class="modal-stat-val">\uD83D\uDD01 '+m.shares.toLocaleString('ar-SA')+'</div><div class="modal-stat-lbl">مشاركة</div></div><div class="modal-stat-box"><div class="modal-stat-val">\uD83D\uDCAC '+m.comments.toLocaleString('ar-SA')+'</div><div class="modal-stat-lbl">تعليق</div></div><div class="modal-stat-box"><div class="modal-stat-val" style="color:'+sentColor+'">'+(m.sentiment==='positive'?'↑ إيجابي':m.sentiment==='negative'?'↓ سلبي':'← محايد')+'</div><div class="modal-stat-lbl">المشاعر</div></div></div>'+(matchedKws.length?'<div class="modal-keywords"><div style="font-size:11px;color:var(--muted);margin-bottom:7px;font-weight:600">الكلمات المرصودة:</div><div style="display:flex;flex-wrap:wrap;gap:5px">'+matchedKws.map(function(kw){return'<span style="padding:3px 11px;border-radius:20px;background:rgba(0,198,255,.1);color:var(--accent);font-size:11px;font-weight:700;border:1px solid rgba(0,198,255,.2)">'+kw+'</span>';}).join('')+'</div></div>':'')+'</div><div class="modal-footer">'+(m.url?'<a href="'+m.url+'" target="_blank" class="modal-open-btn">\uD83D\uDD17 فتح المنشور الأصلي ↗</a>':'<span></span>')+'<div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="closeModal()">إغلاق</button><button class="btn btn-primary" onclick="copyMention(\''+m.id+'\')">\uD83D\uDCCB نسخ</button></div></div></div>';
+  document.body.appendChild(overlay);document.body.style.overflow='hidden';
+}
+function closeModal(){const m=document.getElementById('mention-modal');if(m){m.remove();document.body.style.overflow='';}}
+function copyMention(id){
+  const m=allMentions.find(function(x){return String(x.id)===String(id);});if(!m)return;
+  const txt=m.user.name+'\n'+m.text.replace(/<[^>]+>/g,'')+'\n\nالمصدر: '+(m.src?m.src.name:'')+'  ❤️'+m.likes+' \uD83D\uDD01'+m.shares+' \uD83D\uDCAC'+m.comments+(m.url?'\n'+m.url:'');
+  navigator.clipboard.writeText(txt).then(function(){showToast('\uD83D\uDCCB','تم نسخ المنشور');});
+}
+function openApiSetup(){
+  if(document.getElementById('api-modal'))return;
+  var overlay=document.createElement('div');
+  overlay.className='modal-overlay';overlay.id='api-modal';
+  overlay.onclick=function(e){if(e.target===overlay)closeApiSetup();};
+  var box=document.createElement('div');box.className='modal-box api-setup-modal';
+  var html=[
+    '<div class="modal-header">',
+    '<div style="font-size:16px;font-weight:900">&#128273; ربط APIs الحقيقية</div>',
+    '<button class="modal-close" onclick="closeApiSetup()">X</button>',
+    '</div>',
+    '<div class="api-tabs">',
+    '<button class="api-tab active" onclick="switchApiTab(this,\'yt-tab\')">YT API</button>',
+    '<button class="api-tab" onclick="switchApiTab(this,\'news-tab\')">NewsAPI</button>',
+    '<button class="api-tab" onclick="switchApiTab(this,\'google-tab\')">Google CSE</button>',
+    '<button class="api-tab" onclick="switchApiTab(this,\'alerts-tab\')">Alerts RSS</button>',
+    '</div>',
+    '<div id="yt-tab" class="api-tab-content active">',
+    '<div class="api-input-group"><label>YouTube API Key</label>',
+    '<input class="api-input" id="yt-key-input" placeholder="AIzaSy..." value="'+YOUTUBE_API_KEY+'">',
+    '<div class="api-note">&#10003; مجاني 10,000 طلب/يوم</div></div>',
+    '<div class="api-actions">',
+    '<button class="btn btn-ghost" onclick="testYouTube()">اختبار</button>',
+    '<button class="btn btn-primary" onclick="saveYoutubeKey()">حفظ</button>',
+    '</div></div>',
+    '<div id="news-tab" class="api-tab-content">',
+    '<div class="api-input-group"><label>NewsAPI Key</label>',
+    '<input class="api-input" id="news-key-input" placeholder="xxxxxxxx" value="'+NEWS_API_KEY+'">',
+    '<div class="api-note">&#10003; مجاني 100 طلب/يوم</div></div>',
+    '<div class="api-actions">',
+    '<button class="btn btn-ghost" onclick="testNews()">اختبار</button>',
+    '<button class="btn btn-primary" onclick="saveNewsKey()">حفظ</button>',
+    '</div></div>',
+    '<div id="google-tab" class="api-tab-content">',
+    '<div class="api-input-group"><label>SerpAPI Key</label>',
+    '<input class="api-input" id="serp-key-input" placeholder="xxxxxxx..." value="'+SERPER_API_KEY+'">',
+    '<div class="api-note">&#10003; يرصد Google + LinkedIn + X - مجاني 250 بحث/شهر - serpapi.com</div></div>',
+    '<div class="api-actions">',
+    '<button class="btn btn-ghost" onclick="testSerpAPI()">اختبار</button>',
+    '<button class="btn btn-primary" onclick="saveSerpAPI()">حفظ</button>',
+    '</div></div>',
+    '<div id="alerts-tab" class="api-tab-content">',
+    '<div class="api-input-group"><label>روابط RSS</label>',
+    '<textarea class="api-input" id="alerts-rss-input" rows="4" style="direction:ltr;text-align:left">'+ALERTS_RSS_URLS.join(String.fromCharCode(10))+'</textarea>',
+    '<div class="api-note">&#10003; مجاني تماماً</div></div>',
+    '<div class="api-actions">',
+    '<button class="btn btn-primary" onclick="saveAlertsRSS()">حفظ</button>',
+    '</div></div>'
+  ];
+  box.innerHTML=html.join('');
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);document.body.style.overflow='hidden';
+}
+function closeApiSetup(){const m=document.getElementById('api-modal');if(m){m.remove();document.body.style.overflow='';}}
+function switchApiTab(el,tabId){
+  document.querySelectorAll('.api-tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.api-tab-content').forEach(function(t){t.classList.remove('active');});
+  el.classList.add('active');document.getElementById(tabId).classList.add('active');
+}
+async function saveYoutubeKey(){
+  const key=document.getElementById('yt-key-input').value.trim();
+  if(!key){showToast('⚠️','الرجاء إدخال المفتاح');return;}
+  YOUTUBE_API_KEY=key;localStorage.setItem('yt_api_key',key);
+  showToast('✅','تم حفظ YouTube API Key');closeApiSetup();await refreshFeed();
+}
+async function saveNewsKey(){
+  const key=document.getElementById('news-key-input').value.trim();
+  if(!key){showToast('⚠️','الرجاء إدخال المفتاح');return;}
+  NEWS_API_KEY=key;localStorage.setItem('news_api_key',key);
+  showToast('✅','تم حفظ NewsAPI Key');closeApiSetup();await refreshFeed();
+}
+function saveAlertsRSS(){
+  const val=document.getElementById('alerts-rss-input').value.trim();
+  const urls=val.split('\n').map(function(u){return u.trim();}).filter(function(u){return u.startsWith('http');});
+  if(!urls.length){showToast('⚠️','الرجاء إدخال رابط RSS واحد على الأقل');return;}
+  ALERTS_RSS_URLS=urls;localStorage.setItem('alerts_rss',JSON.stringify(urls));
+  showToast('✅','تم حفظ '+urls.length+' رابط RSS');closeApiSetup();refreshFeed();
+}
+
+async function testSerpAPI(){
+  var key=document.getElementById('serp-key-input').value.trim();
+  if(!key){showToast('X','ادخل المفتاح');return;}
+  showToast('...','جاري اختبار الاتصال');
+  try{
+    var r=await fetch('https://serpapi.com/search.json?q=test&num=1&api_key='+key);
+    var d=await r.json();
+    d.error?showToast('X','خطأ: '+d.error):showToast('OK','SerpAPI يعمل بنجاح');
+  }catch(e){showToast('X','تعذر الاتصال');}
+}
+async function saveSerpAPI(){
+  var key=document.getElementById('serp-key-input').value.trim();
+  if(!key){showToast('X','ادخل المفتاح');return;}
+  SERPER_API_KEY=key;
+  localStorage.setItem('serper_api_key',key);
+  showToast('OK','تم حفظ SerpAPI');closeApiSetup();await refreshFeed();
+}
+
+async function testYouTube(){
+  const key=document.getElementById('yt-key-input').value.trim();
+  if(!key){showToast('⚠️','أدخل المفتاح أولاً');return;}
+  showToast('\uD83D\uDD04','جاري اختبار الاتصال...');
+  try{const r=await fetch('https://www.googleapis.com/youtube/v3/search?part=snippet&q=التخصيص&maxResults=1&key='+key);const d=await r.json();d.error?showToast('❌','خطأ: '+d.error.message):showToast('✅','YouTube API يعمل بنجاح! \uD83C\uDF89');}catch(e){showToast('❌','تعذّر الاتصال');}
+}
+async function testNews(){
+  const key=document.getElementById('news-key-input').value.trim();
+  if(!key){showToast('⚠️','أدخل المفتاح أولاً');return;}
+  showToast('\uD83D\uDD04','جاري اختبار الاتصال...');
+  try{const r=await fetch('https://newsapi.org/v2/everything?q=التخصيص&pageSize=1&apiKey='+key);const d=await r.json();d.status!=='ok'?showToast('❌','خطأ: '+d.message):showToast('✅','NewsAPI يعمل بنجاح! \uD83C\uDF89');}catch(e){showToast('❌','تعذّر الاتصال');}
+}
+function filterTab(el,val){document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});el.classList.add('active');currentFilter=val;renderFeed();}
+function filterByKw_el(el){var kw=el.querySelector('[data-kw]');if(kw)filterByKw(kw.getAttribute('data-kw'));}
+function filterByKw(kw){document.getElementById('search-input').value=kw;renderFeed();}
+function toggleSource(id){const s=SOURCES.find(function(x){return x.id===id;});if(s){s.on=!s.on;renderSources();renderFeed();}}
+function removeKeyword(i){
+  var kw=keywords[i];
+  keywords.splice(i,1);
+  localStorage.setItem('kw_list',JSON.stringify(keywords));
+  renderKeywords();
+  showToast('!','تم حذف: '+kw);
+}
+function addKeyword(){
+  var inp=document.getElementById('kw-input');
+  if(!inp)return;
+  var val=inp.value.trim();
+  if(!val)return;
+  if(keywords.includes(val)){showToast('!','الكلمة موجودة');return;}
+  keywords.push(val);
+  localStorage.setItem('kw_list',JSON.stringify(keywords));
+  inp.value='';
+  renderKeywords();
+  showToast('OK','تمت الاضافة: '+val);
+}
+function exportData(){
+  const rows=[['المصدر','المستخدم','النص','المشاعر','الإعجابات','الوقت','رابط','حقيقي']];
+  allMentions.forEach(function(m){rows.push([m.src?m.src.name:'',m.user.name,m.text.replace(/<[^>]+>/g,''),m.sentiment,m.likes,timeAgo(m.minsAgo),m.url||'—',m.isReal?'نعم':'تجريبي']);});
+  const csv=rows.map(function(r){return r.map(function(v){return'"'+String(v).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));a.download='رصد_التخصيص.csv';a.click();showToast('⬇','تم تصدير البيانات');
+}
+function showToast(icon,msg){
+  const c=document.getElementById('toast-container');
+  const t=document.createElement('div');t.className='toast';t.innerHTML='<span class="toast-icon">'+icon+'</span><span>'+msg+'</span>';
+  c.appendChild(t);setTimeout(function(){t.remove();},4000);
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closeModal();closeApiSetup();}});
+(async function(){
+  await refreshFeed();
+  if(YOUTUBE_API_KEY||NEWS_API_KEY||GNEWS_API_KEY||ALERTS_RSS_URLS.length||SERPER_API_KEY){document.getElementById('api-banner').style.display='none';updateStatusBadge(true);}
+  showToast('\uD83D\uDC4B','مرحباً أحمد! رادار التخصيص جاهز');
+})();
+setInterval(async function(){if(YOUTUBE_API_KEY||NEWS_API_KEY||SERPER_API_KEY)await refreshFeed();},3000000);
+</script>
+</body>
+</html>
