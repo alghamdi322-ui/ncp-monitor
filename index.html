@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>رادار التخصيص — رصد إعلامي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* ===== هوية المركز الوطني للتخصيص ===== */
+  :root{
+    --navy:#2D3F62;       /* اللون الأساسي / البنية والنص */
+    --gold:#DAB785;       /* لون التمييز الرئيسي */
+    --sage:#1AAB8A;       /* مصدر NewsData */
+    --terracotta:#D5896F; /* مصدر GNews */
+    --steel:#7A96B9;      /* مصدر Google */
+    --bg:#F5F6F8;
+    --card:#FFFFFF;
+    --line:#E4E7EC;
+    --ink:#2D3F62;
+    --muted:#6B7689;
+    --radius:14px;
+    --shadow:0 1px 2px rgba(45,63,98,.06), 0 8px 24px rgba(45,63,98,.06);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Cairo',system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:inherit;}
+
+  /* ===== الترويسة ===== */
+  .header{
+    background:var(--navy);
+    color:#fff;
+    padding:26px 20px 22px;
+    position:relative;
+    overflow:hidden;
+  }
+  /* لمسة مثلثات هندسية خفيفة (موتيف المركز) */
+  .header::after{
+    content:"";position:absolute;inset:0;pointer-events:none;opacity:.10;
+    background-image:
+      linear-gradient(135deg, transparent 49.4%, var(--gold) 49.5%, var(--gold) 50.5%, transparent 50.6%),
+      linear-gradient(45deg, transparent 49.4%, #fff 49.5%, #fff 50.5%, transparent 50.6%);
+    background-size:42px 42px, 64px 64px;
+    background-position:right top, left top;
+  }
+  .header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:16px;position:relative;z-index:1;flex-wrap:wrap;}
+  .radar{flex:0 0 auto;width:46px;height:46px;}
+  .radar .ring{fill:none;stroke:var(--gold);stroke-width:1.4;opacity:.55;}
+  .radar .core{fill:var(--gold);}
+  .radar .sweep{transform-origin:24px 24px;animation:sweep 4s linear infinite;}
+  @keyframes sweep{to{transform:rotate(360deg);}}
+  .title-block h1{margin:0;font-size:24px;font-weight:800;letter-spacing:-.2px;}
+  .title-block p{margin:2px 0 0;font-size:13px;color:#C8D2E4;font-weight:600;}
+  .status{margin-inline-start:auto;text-align:end;font-size:12.5px;color:#C8D2E4;}
+  .status .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--sage);margin-inline-start:6px;vertical-align:middle;}
+  .status b{color:#fff;font-weight:700;}
+
+  /* ===== الحاوية ===== */
+  .wrap{max-width:1100px;margin:0 auto;padding:20px;}
+
+  /* ===== شريط التحكم ===== */
+  .controls{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:16px;box-shadow:var(--shadow);margin-bottom:18px;
+  }
+  .search-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .search-row input{
+    flex:1;min-width:200px;font-family:inherit;font-size:15px;
+    padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);
+  }
+  .search-row input:focus{outline:none;border-color:var(--navy);}
+  .btn{
+    font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;
+    padding:12px 22px;border:none;border-radius:10px;background:var(--navy);color:#fff;
+  }
+  .btn:hover{background:#243352;}
+  .btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+
+  .group-label{font-size:12.5px;font-weight:700;color:var(--muted);margin:16px 0 8px;}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;}
+  .chip{
+    font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;
+    padding:7px 14px;border:1.5px solid var(--line);border-radius:999px;background:#fff;color:var(--navy);
+  }
+  .chip:hover{border-color:var(--navy);}
+  .chip:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  .chip.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .chip.src.active[data-src="newsdata"]{background:var(--sage);border-color:var(--sage);}
+  .chip.src.active[data-src="gnews"]{background:var(--terracotta);border-color:var(--terracotta);}
+  .chip.src.active[data-src="google"]{background:var(--steel);border-color:var(--steel);}
+
+  /* رقاقة كلمة قابلة للحذف */
+  .chip.kw{display:inline-flex;align-items:center;gap:0;padding:0 4px 0 0;}
+  .chip.kw .kw-label{font-family:inherit;font-size:13.5px;font-weight:600;color:var(--navy);background:transparent;border:none;cursor:pointer;padding:7px 14px 7px 8px;border-radius:999px;}
+  .chip.kw.active{background:var(--navy);border-color:var(--navy);}
+  .chip.kw.active .kw-label{color:#fff;}
+  .chip.kw .kw-x{font-family:inherit;font-size:15px;line-height:1;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:2px 7px;border-radius:50%;}
+  .chip.kw.active .kw-x{color:#C8D2E4;}
+  .chip.kw .kw-x:hover{color:var(--terracotta);}
+  .chip.kw .kw-label:focus-visible,.chip.kw .kw-x:focus-visible{outline:2px solid var(--gold);outline-offset:1px;}
+  /* صف إضافة كلمة */
+  .kw-add{display:flex;gap:8px;margin-top:10px;}
+  .kw-add input{flex:1;min-width:160px;font-family:inherit;font-size:14px;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);}
+  .kw-add input:focus{outline:none;border-color:var(--navy);}
+  .kw-add button{font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;padding:9px 20px;border:1.5px solid var(--navy);border-radius:10px;background:#fff;color:var(--navy);}
+  .kw-add button:hover{background:var(--navy);color:#fff;}
+  .kw-add button:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+
+  /* ===== العدّاد ===== */
+  .meta-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+  .count{font-size:14px;color:var(--muted);font-weight:600;}
+  .count b{color:var(--navy);font-weight:800;}
+
+  /* ===== البطاقات ===== */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;}
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .card:hover{transform:translateY(-2px);box-shadow:0 4px 8px rgba(45,63,98,.08),0 16px 36px rgba(45,63,98,.10);}
+  .card-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .badge{
+    font-size:11.5px;font-weight:700;padding:3px 10px;border-radius:999px;color:#fff;
+    display:inline-flex;align-items:center;gap:5px;
+  }
+  /* مثلث صغير داخل الشارة كموتيف */
+  .badge::before{content:"";width:0;height:0;border-inline-start:5px solid transparent;border-inline-end:5px solid transparent;border-bottom:7px solid rgba(255,255,255,.85);}
+  .badge.newsdata{background:var(--sage);}
+  .badge.gnews{background:var(--terracotta);}
+  .badge.google{background:var(--steel);}
+  .card .date{font-size:12px;color:var(--muted);font-weight:600;margin-inline-start:auto;}
+  .card h3{margin:0;font-size:16.5px;font-weight:700;line-height:1.5;}
+  .card h3 a{text-decoration:none;}
+  .card h3 a:hover{color:var(--navy);text-decoration:underline;}
+  .card .snippet{font-size:13.5px;color:#4a5568;margin:0;}
+  .card .src-name{font-size:12px;color:var(--muted);font-weight:600;margin-top:auto;padding-top:4px;border-top:1px solid var(--line);}
+
+  /* ===== حالات (تحميل / فارغ / خطأ) ===== */
+  .state{
+    text-align:center;padding:60px 20px;color:var(--muted);
+    background:var(--card);border:1px dashed var(--line);border-radius:var(--radius);
+  }
+  .state h2{margin:0 0 6px;font-size:18px;color:var(--navy);font-weight:700;}
+  .state p{margin:0;font-size:14px;}
+  .pulse{width:40px;height:40px;margin:0 auto 14px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--gold);animation:spin .9s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .state.error{border-color:var(--terracotta);border-style:solid;}
+  .state.error h2{color:var(--terracotta);}
+  .hidden{display:none;}
+
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:24px;}
+
+  @media (prefers-reduced-motion:reduce){
+    .radar .sweep,.pulse{animation:none;}
+    .card{transition:none;}
+  }
+  @media (max-width:540px){
+    .title-block h1{font-size:20px;}
+    .status{margin-inline-start:0;width:100%;text-align:start;}
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <svg class="radar" viewBox="0 0 48 48" aria-hidden="true">
+      <circle class="ring" cx="24" cy="24" r="21"/>
+      <circle class="ring" cx="24" cy="24" r="13"/>
+      <circle class="core" cx="24" cy="24" r="2.6"/>
+      <g class="sweep"><path d="M24 24 L24 3 A21 21 0 0 1 41 14 Z" fill="var(--gold)" opacity="0.30"/></g>
+    </svg>
+    <div class="title-block">
+      <h1>رادار التخصيص</h1>
+      <p>رصد إعلامي · المركز الوطني للتخصيص</p>
+    </div>
+    <div class="status">
+      <span id="statusText">جاهز للرصد</span><span class="dot"></span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="controls">
+    <div class="search-row">
+      <input id="searchInput" type="text" placeholder="ابحث بكلمة مفتاحية…" />
+      <button class="btn" id="searchBtn">رصد</button>
+    </div>
+
+    <div class="group-label">الكلمات المرصودة</div>
+    <div class="chips" id="keywordChips"></div>
+    <div class="kw-add">
+      <input id="kwInput" type="text" placeholder="أضف كلمة مرصودة…" />
+      <button id="kwAddBtn">أضف</button>
+    </div>
+
+    <div class="group-label">المصدر</div>
+    <div class="chips" id="sourceChips">
+      <button class="chip src active" data-src="all">الكل</button>
+      <button class="chip src" data-src="newsdata">NewsData</button>
+      <button class="chip src" data-src="gnews">GNews</button>
+    </div>
+  </section>
+
+  <div class="meta-row">
+    <div class="count" id="count"></div>
+  </div>
+
+  <div id="loading" class="state hidden">
+    <div class="pulse"></div>
+    <h2>جارٍ الرصد…</h2>
+    <p>نجمع آخر التغطية من المصادر</p>
+  </div>
+
+  <div id="empty" class="state hidden">
+    <h2>ما فيه نتائج</h2>
+    <p>جرّب كلمة مفتاحية ثانية أو وسّع البحث.</p>
+  </div>
+
+  <div id="error" class="state error hidden">
+    <h2>تعذّر الاتصال</h2>
+    <p id="errorMsg"></p>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer>رادار التخصيص — أداة رصد داخلية</footer>
+
+<script>
+/* ====================== الإعدادات ====================== */
+const CONFIG = {
+  // رابط الـ Worker على Cloudflare
+  WORKER_URL: "https://autumn-frog-45ac.alghamdi322.workers.dev",
+
+  // الكلمات المرصودة (تقدر تعدّلها بحرية)
+  KEYWORDS: [
+    "التخصيص",
+    "الشراكة بين القطاعين العام والخاص",
+    "المركز الوطني للتخصيص",
+    "PPP",
+    "Privatization",
+    "NCP"
+  ],
+
+  LANG: "ar",
+  COUNTRY: ""   // اتركه فارغاً، أو "sa" لقصر النتائج على السعودية
+};
+
+/* ====================== الحالة ====================== */
+let allArticles = [];
+let activeSource = "all";
+
+/* ====================== عناصر الواجهة ====================== */
+const el = (id) => document.getElementById(id);
+const grid = el("grid"), countEl = el("count"), statusText = el("statusText");
+
+/* ====================== الكلمات المرصودة (قابلة للإضافة/الحذف) ====================== */
+// تُحفظ في متصفحك، فتبقى بعد إعادة التحميل
+function loadKeywords() {
+  try { const s = localStorage.getItem("ncp_keywords"); if (s) return JSON.parse(s); } catch (_) {}
+  return [...CONFIG.KEYWORDS];
+}
+function saveKeywords() { try { localStorage.setItem("ncp_keywords", JSON.stringify(keywords)); } catch (_) {} }
+let keywords = loadKeywords();
+
+/* عبارة البحث المجمّعة من كل الكلمات */
+function combinedQuery() {
+  return keywords.map(k => k.includes(" ") ? `"${k}"` : k).join(" OR ");
+}
+
+function setActiveKeyword(node) {
+  document.querySelectorAll("#keywordChips .chip").forEach(c => c.classList.remove("active"));
+  node.classList.add("active");
+}
+
+function buildKeywordChips() {
+  const box = el("keywordChips");
+  box.innerHTML = "";
+
+  // رقاقة "الكل" = بحث بكل الكلمات
+  const all = document.createElement("button");
+  all.className = "chip active";
+  all.textContent = "الكل";
+  all.addEventListener("click", () => { setActiveKeyword(all); el("searchInput").value = ""; runSearch(combinedQuery()); });
+  box.appendChild(all);
+
+  // رقاقة لكل كلمة، مع زر حذف (×)
+  keywords.forEach(k => {
+    const wrap = document.createElement("span");
+    wrap.className = "chip kw";
+
+    const label = document.createElement("button");
+    label.className = "kw-label";
+    label.textContent = k;
+    label.addEventListener("click", () => { setActiveKeyword(wrap); el("searchInput").value = k; runSearch(k); });
+
+    const x = document.createElement("button");
+    x.className = "kw-x";
+    x.textContent = "×";
+    x.title = "حذف الكلمة";
+    x.addEventListener("click", (e) => {
+      e.stopPropagation();
+      keywords = keywords.filter(w => w !== k);
+      saveKeywords();
+      buildKeywordChips();
+    });
+
+    wrap.appendChild(label);
+    wrap.appendChild(x);
+    box.appendChild(wrap);
+  });
+}
+
+function addKeyword() {
+  const inp = el("kwInput");
+  const v = inp.value.trim();
+  if (!v) return;
+  if (!keywords.includes(v)) keywords.push(v);
+  saveKeywords();
+  inp.value = "";
+  buildKeywordChips();
+}
+
+/* ====================== رقائق المصدر ====================== */
+document.querySelectorAll("#sourceChips .chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    document.querySelectorAll("#sourceChips .chip").forEach(c => c.classList.remove("active"));
+    chip.classList.add("active");
+    activeSource = chip.dataset.src;
+    render();
+  });
+});
+
+/* ====================== البحث اليدوي ====================== */
+el("searchBtn").addEventListener("click", () => {
+  const v = el("searchInput").value.trim();
+  if (v) {
+    document.querySelectorAll("#keywordChips .chip").forEach(c => c.classList.remove("active"));
+    runSearch(v);
+  }
+});
+el("searchInput").addEventListener("keydown", (e) => { if (e.key === "Enter") el("searchBtn").click(); });
+
+/* ====================== جلب البيانات ====================== */
+async function runSearch(query) {
+  showState("loading");
+  statusText.textContent = "جارٍ الرصد…";
+  try {
+    const u = new URL(CONFIG.WORKER_URL);
+    u.searchParams.set("q", query);          // ترميز مرة واحدة فقط
+    if (CONFIG.LANG) u.searchParams.set("lang", CONFIG.LANG);
+    if (CONFIG.COUNTRY) u.searchParams.set("country", CONFIG.COUNTRY);
+
+    const res = await fetch(u.toString());
+    if (!res.ok) throw new Error("استجابة غير متوقعة من الخادم (HTTP " + res.status + ")");
+    const data = await res.json();
+
+    allArticles = data.articles || [];
+    statusText.textContent = "آخر تحديث: " + fmtTime(data.fetchedAt);
+
+    if (allArticles.length === 0) { showState("empty"); countEl.textContent = ""; return; }
+    showState("results");
+    render();
+  } catch (err) {
+    showState("error");
+    el("errorMsg").textContent = (CONFIG.WORKER_URL.includes("YOUR-WORKER"))
+      ? "ما تم ضبط رابط الـ Worker بعد. عدّل قيمة WORKER_URL في أعلى ملف index.html."
+      : "تأكد من تشغيل الـ Worker ومن صحة الرابط. التفاصيل: " + err.message;
+  }
+}
+
+/* ====================== العرض ====================== */
+function render() {
+  const list = activeSource === "all"
+    ? allArticles
+    : allArticles.filter(a => a.origin === activeSource);
+
+  countEl.innerHTML = "<b>" + list.length + "</b> نتيجة";
+  grid.innerHTML = "";
+  if (list.length === 0) { return; }
+
+  for (const a of list) {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML = `
+      <div class="card-top">
+        <span class="badge ${a.origin}">${originLabel(a.origin)}</span>
+        ${a.date ? `<span class="date">${fmtDate(a.date)}</span>` : ""}
+      </div>
+      <h3><a href="${escapeAttr(a.url)}" target="_blank" rel="noopener">${escapeHtml(a.title)}</a></h3>
+      ${a.snippet ? `<p class="snippet">${escapeHtml(a.snippet)}</p>` : ""}
+      <div class="src-name">${escapeHtml(a.source || "")}</div>
+    `;
+    grid.appendChild(card);
+  }
+}
+
+/* ====================== أدوات ====================== */
+function showState(s) {
+  el("loading").classList.toggle("hidden", s !== "loading");
+  el("empty").classList.toggle("hidden", s !== "empty");
+  el("error").classList.toggle("hidden", s !== "error");
+  grid.classList.toggle("hidden", s !== "results");
+}
+function originLabel(o){ return o === "newsdata" ? "NewsData" : o === "gnews" ? "GNews" : o === "google" ? "Google" : o; }
+function fmtDate(iso){
+  try { return new Intl.DateTimeFormat("ar", { day:"numeric", month:"long", year:"numeric", calendar:"gregory" }).format(new Date(iso)); }
+  catch { return ""; }
+}
+function fmtTime(iso){
+  try { return new Intl.DateTimeFormat("ar", { hour:"2-digit", minute:"2-digit", calendar:"gregory" }).format(new Date(iso)); }
+  catch { return "—"; }
+}
+function escapeHtml(s){ return (s||"").replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+function escapeAttr(s){ return (s||"").replace(/"/g,"&quot;"); }
+
+/* ====================== البداية ====================== */
+el("kwAddBtn").addEventListener("click", addKeyword);
+el("kwInput").addEventListener("keydown", (e) => { if (e.key === "Enter") addKeyword(); });
+buildKeywordChips();
+runSearch(combinedQuery());
+</script>
+</body>
+</html>
