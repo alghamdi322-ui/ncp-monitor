@@ -174,16 +174,17 @@
   </section>
 
   <section class="controls">
-    <div class="search-row">
-      <input id="searchInput" type="text" placeholder="ابحث بكلمة مفتاحية…" />
-      <button class="btn" id="searchBtn">رصد</button>
-    </div>
-
-    <div class="group-label">الكلمات المرصودة</div>
+    <div class="group-label" style="margin-top:0;">اختر كلمة مرصودة للبدء</div>
     <div class="chips" id="keywordChips"></div>
     <div class="kw-add">
       <input id="kwInput" type="text" placeholder="أضف كلمة مرصودة…" />
       <button id="kwAddBtn">أضف</button>
+    </div>
+
+    <div class="group-label">أو ابحث بكلمة محددة</div>
+    <div class="search-row">
+      <input id="searchInput" type="text" placeholder="اكتب كلمة مفتاحية ثم اضغط رصد…" />
+      <button class="btn" id="searchBtn">رصد</button>
     </div>
 
     <div class="group-label">الفلاتر والترتيب</div>
@@ -203,6 +204,7 @@
 
   <div class="meta-row"><div class="count" id="count"></div></div>
 
+  <div id="start" class="state"><h2>ابدأ الرصد</h2><p>اضغط على إحدى الكلمات المرصودة فوق، أو اكتب كلمة في خانة البحث.</p></div>
   <div id="loading" class="state hidden"><div class="pulse"></div><h2>جارٍ الرصد…</h2><p>نجمع آخر التغطية من المصادر</p></div>
   <div id="empty" class="state hidden"><h2>ما فيه نتائج</h2><p>جرّب كلمة مفتاحية ثانية أو وسّع نطاق التاريخ.</p></div>
   <div id="error" class="state error hidden"><h2>تعذّر الاتصال</h2><p id="errorMsg"></p></div>
@@ -389,6 +391,7 @@ function resetKPIs(){ ["kTotal","kSources","kToday","kWeek","kMonth"].forEach(id
 
 /* ====================== أدوات ====================== */
 function showState(s){
+  el("start").classList.toggle("hidden", s !== "start");
   el("loading").classList.toggle("hidden", s !== "loading");
   el("empty").classList.toggle("hidden", s !== "empty");
   el("error").classList.toggle("hidden", s !== "error");
@@ -402,7 +405,7 @@ function escapeAttr(s){ return (s||"").replace(/"/g,"&quot;"); }
 
 /* ====================== البداية ====================== */
 buildKeywordChips();
-runSearch(combinedQuery());
+showState("start");
 </script>
 </body>
 </html>
