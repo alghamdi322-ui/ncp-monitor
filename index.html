@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="light">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>رادار التخصيص — رصد إعلامي</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  /* ===== هوية المركز الوطني للتخصيص ===== */
+  :root{
+    --navy:#2D3F62; --gold:#DAB785; --sage:#1AAB8A; --terracotta:#D5896F; --steel:#7A96B9;
+    --bg:#F5F6F8; --card:#FFFFFF; --line:#E4E7EC; --ink:#2D3F62; --muted:#6B7689;
+    --radius:14px; --shadow:0 1px 2px rgba(45,63,98,.06), 0 8px 24px rgba(45,63,98,.06);
+  }
+  /* ===== الوضع الليلي ===== */
+  [data-theme="dark"]{
+    --bg:#151A24; --card:#1E2533; --line:#2C3547; --ink:#E6EAF2; --muted:#9AA6BC;
+    --shadow:0 1px 2px rgba(0,0,0,.35), 0 8px 24px rgba(0,0,0,.35);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{font-family:'Cairo',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s;}
+  a{color:inherit;}
+
+  /* ===== الترويسة ===== */
+  .header{background:var(--navy);color:#fff;padding:22px 20px;position:relative;overflow:hidden;}
+  .header::after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.10;
+    background-image:
+      linear-gradient(135deg, transparent 49.4%, var(--gold) 49.5%, var(--gold) 50.5%, transparent 50.6%),
+      linear-gradient(45deg, transparent 49.4%, #fff 49.5%, #fff 50.5%, transparent 50.6%);
+    background-size:42px 42px, 64px 64px;background-position:right top, left top;}
+  .header-inner{max-width:1180px;margin:0 auto;display:flex;align-items:center;gap:16px;position:relative;z-index:1;flex-wrap:wrap;}
+  .radar{flex:0 0 auto;width:44px;height:44px;}
+  .radar .ring{fill:none;stroke:var(--gold);stroke-width:1.4;opacity:.55;}
+  .radar .core{fill:var(--gold);}
+  .radar .sweep{transform-origin:24px 24px;animation:sweep 4s linear infinite;}
+  @keyframes sweep{to{transform:rotate(360deg);}}
+  .title-block h1{margin:0;font-size:23px;font-weight:800;letter-spacing:-.2px;}
+  .title-block p{margin:2px 0 0;font-size:13px;color:#C8D2E4;font-weight:600;}
+  .header-actions{margin-inline-start:auto;display:flex;align-items:center;gap:14px;}
+  .status{text-align:end;font-size:12.5px;color:#C8D2E4;}
+  .status .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--sage);margin-inline-start:6px;vertical-align:middle;}
+  .theme-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);color:#fff;width:40px;height:40px;border-radius:10px;cursor:pointer;font-size:18px;line-height:1;display:flex;align-items:center;justify-content:center;}
+  .theme-btn:hover{background:rgba(255,255,255,.2);}
+  .theme-btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+
+  .wrap{max-width:1180px;margin:0 auto;padding:20px;}
+
+  /* ===== شريط المؤشرات (KPIs) ===== */
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:18px;}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden;}
+  .kpi::before{content:"";position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:var(--gold);}
+  .kpi .num{font-size:26px;font-weight:800;color:var(--ink);line-height:1.1;}
+  .kpi .lbl{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:2px;}
+  .kpi.k-sources::before{background:var(--steel);}
+  .kpi.k-today::before{background:var(--sage);}
+  .kpi.k-week::before{background:var(--terracotta);}
+  .kpi.k-month::before{background:var(--navy);}
+
+  /* ===== شريط التحكم ===== */
+  .controls{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);margin-bottom:18px;}
+  .search-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .search-row input{flex:1;min-width:200px;font-family:inherit;font-size:15px;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);}
+  .search-row input:focus{outline:none;border-color:var(--navy);}
+  .btn{font-family:inherit;font-weight:700;font-size:15px;cursor:pointer;padding:12px 22px;border:none;border-radius:10px;background:var(--navy);color:#fff;}
+  .btn:hover{background:#243352;}
+  .btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+
+  .group-label{font-size:12.5px;font-weight:700;color:var(--muted);margin:16px 0 8px;}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;}
+  .chip{font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;padding:7px 14px;border:1.5px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink);}
+  .chip:hover{border-color:var(--navy);}
+  .chip:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+  .chip.active{background:var(--navy);border-color:var(--navy);color:#fff;}
+  .chip.src.active[data-src="newsdata"]{background:var(--sage);border-color:var(--sage);}
+  .chip.src.active[data-src="gnews"]{background:var(--terracotta);border-color:var(--terracotta);}
+
+  .chip.kw{display:inline-flex;align-items:center;gap:0;padding:0 4px 0 0;}
+  .chip.kw .kw-label{font-family:inherit;font-size:13.5px;font-weight:600;color:var(--ink);background:transparent;border:none;cursor:pointer;padding:7px 14px 7px 8px;border-radius:999px;}
+  .chip.kw.active{background:var(--navy);border-color:var(--navy);}
+  .chip.kw.active .kw-label{color:#fff;}
+  .chip.kw .kw-x{font-family:inherit;font-size:15px;line-height:1;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:2px 7px;border-radius:50%;}
+  .chip.kw.active .kw-x{color:#C8D2E4;}
+  .chip.kw .kw-x:hover{color:var(--terracotta);}
+  .kw-add{display:flex;gap:8px;margin-top:10px;}
+  .kw-add input{flex:1;min-width:160px;font-family:inherit;font-size:14px;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);}
+  .kw-add input:focus{outline:none;border-color:var(--navy);}
+  .kw-add button{font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;padding:9px 20px;border:1.5px solid var(--navy);border-radius:10px;background:var(--card);color:var(--navy);}
+  .kw-add button:hover{background:var(--navy);color:#fff;}
+
+  /* صف الفلاتر */
+  .filters{display:flex;gap:14px;flex-wrap:wrap;align-items:flex-end;margin-top:8px;}
+  .filters .field{display:flex;flex-direction:column;gap:4px;}
+  .filters label{font-size:12px;font-weight:700;color:var(--muted);}
+  .filters input,.filters select{font-family:inherit;font-size:13.5px;padding:8px 10px;border:1.5px solid var(--line);border-radius:9px;background:var(--card);color:var(--ink);}
+  .filters input:focus,.filters select:focus{outline:none;border-color:var(--navy);}
+
+  .meta-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+  .count{font-size:14px;color:var(--muted);font-weight:600;}
+  .count b{color:var(--ink);font-weight:800;}
+
+  /* ===== البطاقات (مدمجة) ===== */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(390px,1fr));gap:14px;}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow);display:flex;gap:12px;transition:transform .12s ease, box-shadow .12s ease;}
+  .card:hover{transform:translateY(-2px);box-shadow:0 4px 8px rgba(45,63,98,.08),0 16px 36px rgba(45,63,98,.10);}
+  .thumb{width:92px;height:92px;object-fit:cover;border-radius:10px;flex:0 0 auto;background:var(--line);}
+  .card-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;}
+  .card-head{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+  .badge{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;color:#fff;display:inline-flex;align-items:center;gap:4px;}
+  .badge::before{content:"";width:0;height:0;border-inline-start:4px solid transparent;border-inline-end:4px solid transparent;border-bottom:6px solid rgba(255,255,255,.85);}
+  .badge.newsdata{background:var(--sage);}
+  .badge.gnews{background:var(--terracotta);}
+  .cat{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:999px;background:rgba(122,150,185,.16);color:var(--steel);}
+  [data-theme="dark"] .cat{background:rgba(122,150,185,.22);color:#aebfd8;}
+  .card .date{font-size:11.5px;color:var(--muted);font-weight:600;margin-inline-start:auto;}
+  .card h3{margin:0;font-size:15px;font-weight:700;line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .card h3 a{text-decoration:none;}
+  .card h3 a:hover{text-decoration:underline;}
+  .card .snippet{font-size:12.5px;color:var(--muted);margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:6px;border-top:1px solid var(--line);}
+  .src-name{font-size:11.5px;color:var(--muted);font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .merged{color:var(--gold);font-weight:700;}
+  .read{font-size:12px;font-weight:700;color:var(--navy);text-decoration:none;white-space:nowrap;}
+  [data-theme="dark"] .read{color:var(--gold);}
+  .read:hover{text-decoration:underline;}
+
+  /* ===== حالات ===== */
+  .state{text-align:center;padding:60px 20px;color:var(--muted);background:var(--card);border:1px dashed var(--line);border-radius:var(--radius);}
+  .state h2{margin:0 0 6px;font-size:18px;color:var(--ink);font-weight:700;}
+  .state p{margin:0;font-size:14px;}
+  .pulse{width:40px;height:40px;margin:0 auto 14px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--gold);animation:spin .9s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .state.error{border-color:var(--terracotta);border-style:solid;}
+  .state.error h2{color:var(--terracotta);}
+  .hidden{display:none;}
+
+  footer{text-align:center;color:var(--muted);font-size:12px;padding:24px;}
+
+  @media (prefers-reduced-motion:reduce){.radar .sweep,.pulse{animation:none;}.card{transition:none;}}
+  @media (max-width:900px){.kpis{grid-template-columns:repeat(3,1fr);}}
+  @media (max-width:560px){.kpis{grid-template-columns:repeat(2,1fr);}.card{flex-direction:column;}.thumb{width:100%;height:150px;}.header-actions{margin-inline-start:0;width:100%;justify-content:space-between;}}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <svg class="radar" viewBox="0 0 48 48" aria-hidden="true">
+      <circle class="ring" cx="24" cy="24" r="21"/><circle class="ring" cx="24" cy="24" r="13"/>
+      <circle class="core" cx="24" cy="24" r="2.6"/>
+      <g class="sweep"><path d="M24 24 L24 3 A21 21 0 0 1 41 14 Z" fill="var(--gold)" opacity="0.30"/></g>
+    </svg>
+    <div class="title-block">
+      <h1>رادار التخصيص</h1>
+      <p>رصد إعلامي · المركز الوطني للتخصيص</p>
+    </div>
+    <div class="header-actions">
+      <div class="status"><span id="statusText">جاهز للرصد</span><span class="dot"></span></div>
+      <button class="theme-btn" id="themeBtn" title="الوضع الليلي" aria-label="تبديل الوضع الليلي">🌙</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <!-- شريط المؤشرات -->
+  <section class="kpis">
+    <div class="kpi k-total"><div class="num" id="kTotal">—</div><div class="lbl">إجمالي الأخبار</div></div>
+    <div class="kpi k-sources"><div class="num" id="kSources">—</div><div class="lbl">عدد المصادر</div></div>
+    <div class="kpi k-today"><div class="num" id="kToday">—</div><div class="lbl">إشارات اليوم</div></div>
+    <div class="kpi k-week"><div class="num" id="kWeek">—</div><div class="lbl">هذا الأسبوع</div></div>
+    <div class="kpi k-month"><div class="num" id="kMonth">—</div><div class="lbl">هذا الشهر</div></div>
+  </section>
+
+  <section class="controls">
+    <div class="search-row">
+      <input id="searchInput" type="text" placeholder="ابحث بكلمة مفتاحية…" />
+      <button class="btn" id="searchBtn">رصد</button>
+    </div>
+
+    <div class="group-label">الكلمات المرصودة</div>
+    <div class="chips" id="keywordChips"></div>
+    <div class="kw-add">
+      <input id="kwInput" type="text" placeholder="أضف كلمة مرصودة…" />
+      <button id="kwAddBtn">أضف</button>
+    </div>
+
+    <div class="group-label">الفلاتر والترتيب</div>
+    <div class="chips" id="sourceChips" style="margin-bottom:10px;">
+      <button class="chip src active" data-src="all">كل المصادر</button>
+      <button class="chip src" data-src="newsdata">NewsData</button>
+      <button class="chip src" data-src="gnews">GNews</button>
+    </div>
+    <div class="filters">
+      <div class="field"><label for="sortSel">الترتيب</label>
+        <select id="sortSel"><option value="newest">الأحدث</option><option value="relevance">الأكثر صلة</option></select>
+      </div>
+      <div class="field"><label for="dateFrom">من تاريخ</label><input id="dateFrom" type="date" /></div>
+      <div class="field"><label for="dateTo">إلى تاريخ</label><input id="dateTo" type="date" /></div>
+    </div>
+  </section>
+
+  <div class="meta-row"><div class="count" id="count"></div></div>
+
+  <div id="loading" class="state hidden"><div class="pulse"></div><h2>جارٍ الرصد…</h2><p>نجمع آخر التغطية من المصادر</p></div>
+  <div id="empty" class="state hidden"><h2>ما فيه نتائج</h2><p>جرّب كلمة مفتاحية ثانية أو وسّع نطاق التاريخ.</p></div>
+  <div id="error" class="state error hidden"><h2>تعذّر الاتصال</h2><p id="errorMsg"></p></div>
+
+  <div class="grid" id="grid"></div>
+</main>
+
+<footer>رادار التخصيص — أداة رصد داخلية</footer>
+
+<script>
+/* ====================== الإعدادات ====================== */
+const CONFIG = {
+  WORKER_URL: "https://autumn-frog-45ac.alghamdi322.workers.dev",
+  KEYWORDS: ["التخصيص","الشراكة بين القطاعين العام والخاص","المركز الوطني للتخصيص","PPP","Privatization","NCP"],
+  LANG: "ar",
+  COUNTRY: ""
+};
+
+/* التصنيفات التلقائية (كلمات دالة لكل تصنيف) */
+const CATEGORIES = [
+  { name:"ترسية",   kw:["ترسية","ترسي","أرست","رست ","فاز بـ","فاز بمناقصة","العطاء الفائز"] },
+  { name:"تشغيل",   kw:["تشغيل","بدء التشغيل","المشغّل","الإسناد التشغيلي"] },
+  { name:"استثمار", kw:["استثمار","مستثمر","استثماري","فرص استثمارية"] },
+  { name:"شراكات",  kw:["شراكة","اتفاقية","مذكرة تفاهم","توقيع اتفاقية","تعاون"] },
+  { name:"خصخصة",   kw:["خصخصة","تخصيص","بيع حصة","طرح حصة"] },
+  { name:"مؤتمرات", kw:["مؤتمر","ملتقى","منتدى","ورشة","معرض"] },
+  { name:"تصريحات", kw:["صرّح","صرح","أكد","قال","تصريح","أوضح"] },
+  { name:"مشاريع",  kw:["مشروع","مشاريع","مناقصة","مناقصات","طرح","EOI","RFP","RFQ"] }
+];
+
+/* ====================== الحالة ====================== */
+let allArticles = [];
+let activeSource = "all";
+let sortMode = "newest";
+let dateFrom = "", dateTo = "";
+
+const el = (id) => document.getElementById(id);
+const grid = el("grid"), countEl = el("count"), statusText = el("statusText");
+
+/* ====================== الوضع الليلي ====================== */
+function applyTheme(t){ document.documentElement.dataset.theme = t; el("themeBtn").textContent = t === "dark" ? "☀️" : "🌙"; }
+(function initTheme(){ let t="light"; try{ t = localStorage.getItem("ncp_theme") || "light"; }catch(_){} applyTheme(t); })();
+el("themeBtn").addEventListener("click", () => {
+  const t = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+  applyTheme(t); try{ localStorage.setItem("ncp_theme", t); }catch(_){}
+});
+
+/* ====================== الكلمات المرصودة ====================== */
+function loadKeywords(){ try{ const s = localStorage.getItem("ncp_keywords"); if(s) return JSON.parse(s); }catch(_){} return [...CONFIG.KEYWORDS]; }
+function saveKeywords(){ try{ localStorage.setItem("ncp_keywords", JSON.stringify(keywords)); }catch(_){} }
+let keywords = loadKeywords();
+function combinedQuery(){ return keywords.map(k => k.includes(" ") ? `"${k}"` : k).join(" OR "); }
+function setActiveKeyword(node){ document.querySelectorAll("#keywordChips .chip").forEach(c=>c.classList.remove("active")); node.classList.add("active"); }
+
+function buildKeywordChips(){
+  const box = el("keywordChips"); box.innerHTML = "";
+  const all = document.createElement("button");
+  all.className = "chip active"; all.textContent = "الكل";
+  all.addEventListener("click", () => { setActiveKeyword(all); el("searchInput").value=""; runSearch(combinedQuery()); });
+  box.appendChild(all);
+  keywords.forEach(k => {
+    const wrap = document.createElement("span"); wrap.className = "chip kw";
+    const label = document.createElement("button"); label.className = "kw-label"; label.textContent = k;
+    label.addEventListener("click", () => { setActiveKeyword(wrap); el("searchInput").value=k; runSearch(k); });
+    const x = document.createElement("button"); x.className = "kw-x"; x.textContent = "×"; x.title = "حذف";
+    x.addEventListener("click", (e)=>{ e.stopPropagation(); keywords = keywords.filter(w=>w!==k); saveKeywords(); buildKeywordChips(); });
+    wrap.appendChild(label); wrap.appendChild(x); box.appendChild(wrap);
+  });
+}
+function addKeyword(){ const inp=el("kwInput"); const v=inp.value.trim(); if(!v) return; if(!keywords.includes(v)) keywords.push(v); saveKeywords(); inp.value=""; buildKeywordChips(); }
+
+/* ====================== الفلاتر ====================== */
+document.querySelectorAll("#sourceChips .chip").forEach(chip => {
+  chip.addEventListener("click", () => {
+    document.querySelectorAll("#sourceChips .chip").forEach(c=>c.classList.remove("active"));
+    chip.classList.add("active"); activeSource = chip.dataset.src; render();
+  });
+});
+el("sortSel").addEventListener("change", e => { sortMode = e.target.value; render(); });
+el("dateFrom").addEventListener("change", e => { dateFrom = e.target.value; render(); });
+el("dateTo").addEventListener("change", e => { dateTo = e.target.value; render(); });
+
+el("searchBtn").addEventListener("click", () => { const v = el("searchInput").value.trim(); if(v){ document.querySelectorAll("#keywordChips .chip").forEach(c=>c.classList.remove("active")); runSearch(v); } });
+el("searchInput").addEventListener("keydown", e => { if(e.key === "Enter") el("searchBtn").click(); });
+el("kwAddBtn").addEventListener("click", addKeyword);
+el("kwInput").addEventListener("keydown", e => { if(e.key === "Enter") addKeyword(); });
+
+/* ====================== الجلب ====================== */
+async function runSearch(query){
+  showState("loading"); statusText.textContent = "جارٍ الرصد…";
+  try{
+    const u = new URL(CONFIG.WORKER_URL);
+    u.searchParams.set("q", query);
+    if(CONFIG.LANG) u.searchParams.set("lang", CONFIG.LANG);
+    if(CONFIG.COUNTRY) u.searchParams.set("country", CONFIG.COUNTRY);
+    const res = await fetch(u.toString());
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    allArticles = (data.articles || []).map(a => ({ ...a, category: categorize(a) }));
+    statusText.textContent = "آخر تحديث: " + fmtTime(data.fetchedAt);
+    if(allArticles.length === 0){ showState("empty"); resetKPIs(); countEl.textContent=""; return; }
+    showState("results"); render();
+  }catch(err){
+    showState("error");
+    el("errorMsg").textContent = CONFIG.WORKER_URL.includes("YOUR-WORKER")
+      ? "ما تم ضبط رابط الـ Worker بعد."
+      : "تأكد من تشغيل الـ Worker ومن صحة الرابط. التفاصيل: " + err.message;
+  }
+}
+
+/* ====================== العرض ====================== */
+function render(){
+  let list = allArticles.slice();
+  if(activeSource !== "all") list = list.filter(a => a.origin === activeSource);
+  if(dateFrom){ const df = new Date(dateFrom); list = list.filter(a => a.date && new Date(a.date) >= df); }
+  if(dateTo){ const dt = new Date(dateTo); dt.setHours(23,59,59,999); list = list.filter(a => a.date && new Date(a.date) <= dt); }
+  if(sortMode === "newest") list.sort((a,b) => new Date(b.date||0) - new Date(a.date||0));
+
+  updateKPIs(list);
+  const groups = groupArticles(list);
+  countEl.innerHTML = "<b>" + groups.length + "</b> خبر" + (list.length > groups.length ? " · من " + list.length + " نتيجة" : "");
+
+  grid.innerHTML = "";
+  if(groups.length === 0){ showState("empty"); return; }
+  showState("results");
+
+  for(const g of groups){
+    const uniqueSources = [...new Set(g.sources)];
+    const card = document.createElement("article"); card.className = "card";
+    card.innerHTML = `
+      ${g.image ? `<img class="thumb" src="${escapeAttr(g.image)}" alt="" onerror="this.style.display='none'">` : ""}
+      <div class="card-body">
+        <div class="card-head">
+          <span class="badge ${g.origin}">${originLabel(g.origin)}</span>
+          <span class="cat">${escapeHtml(g.category)}</span>
+          ${g.date ? `<span class="date">${fmtDate(g.date)}</span>` : ""}
+        </div>
+        <h3><a href="${escapeAttr(g.url)}" target="_blank" rel="noopener">${escapeHtml(g.title)}</a></h3>
+        ${g.snippet ? `<p class="snippet">${escapeHtml(g.snippet)}</p>` : ""}
+        <div class="card-foot">
+          <span class="src-name">${escapeHtml(uniqueSources[0]||"")}${uniqueSources.length>1 ? ` <span class="merged">· ورد في ${uniqueSources.length} مصادر</span>` : ""}</span>
+          <a class="read" href="${escapeAttr(g.url)}" target="_blank" rel="noopener">اقرأ ↗</a>
+        </div>
+      </div>`;
+    grid.appendChild(card);
+  }
+}
+
+/* ====================== التصنيف ====================== */
+function categorize(a){
+  const t = ((a.title||"") + " " + (a.snippet||"")).toLowerCase();
+  for(const c of CATEGORIES){ if(c.kw.some(k => t.includes(k.toLowerCase()))) return c.name; }
+  return "عام";
+}
+
+/* ====================== دمج الأخبار المكررة ====================== */
+function normalizeTitle(t){ return (t||"").replace(/[^\p{L}\p{N}]+/gu," ").trim().toLowerCase(); }
+function groupArticles(articles){
+  const map = new Map();
+  for(const a of articles){
+    const key = normalizeTitle(a.title).slice(0,55);
+    if(!key){ map.set(Symbol(), { ...a, sources:[a.source] }); continue; }
+    if(!map.has(key)) map.set(key, { ...a, sources:[a.source] });
+    else { const g = map.get(key); g.sources.push(a.source); if(!g.image && a.image) g.image = a.image; }
+  }
+  return [...map.values()];
+}
+
+/* ====================== المؤشرات ====================== */
+function updateKPIs(list){
+  const now = new Date();
+  const startToday = new Date(now); startToday.setHours(0,0,0,0);
+  const weekAgo = new Date(now); weekAgo.setDate(now.getDate()-7);
+  const monthAgo = new Date(now); monthAgo.setMonth(now.getMonth()-1);
+  let today=0, week=0, month=0; const sources=new Set();
+  for(const a of list){ if(a.source) sources.add(a.source); if(a.date){ const d=new Date(a.date); if(d>=startToday) today++; if(d>=weekAgo) week++; if(d>=monthAgo) month++; } }
+  el("kTotal").textContent = list.length;
+  el("kSources").textContent = sources.size;
+  el("kToday").textContent = today;
+  el("kWeek").textContent = week;
+  el("kMonth").textContent = month;
+}
+function resetKPIs(){ ["kTotal","kSources","kToday","kWeek","kMonth"].forEach(id => el(id).textContent = "0"); }
+
+/* ====================== أدوات ====================== */
+function showState(s){
+  el("loading").classList.toggle("hidden", s !== "loading");
+  el("empty").classList.toggle("hidden", s !== "empty");
+  el("error").classList.toggle("hidden", s !== "error");
+  grid.classList.toggle("hidden", s !== "results");
+}
+function originLabel(o){ return o === "newsdata" ? "NewsData" : o === "gnews" ? "GNews" : o; }
+function fmtDate(iso){ try{ return new Intl.DateTimeFormat("ar",{day:"numeric",month:"long",year:"numeric",calendar:"gregory"}).format(new Date(iso)); }catch{ return ""; } }
+function fmtTime(iso){ try{ return new Intl.DateTimeFormat("ar",{hour:"2-digit",minute:"2-digit",calendar:"gregory"}).format(new Date(iso)); }catch{ return "—"; } }
+function escapeHtml(s){ return (s||"").replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+function escapeAttr(s){ return (s||"").replace(/"/g,"&quot;"); }
+
+/* ====================== البداية ====================== */
+buildKeywordChips();
+runSearch(combinedQuery());
+</script>
+</body>
+</html>
