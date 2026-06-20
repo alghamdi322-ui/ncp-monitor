@@ -251,10 +251,10 @@ el("themeBtn").addEventListener("click", () => {
 });
 
 /* ====================== الكلمات المرصودة ====================== */
-function loadKeywords(){ try{ const s = localStorage.getItem("ncp_keywords"); if(s) return JSON.parse(s); }catch(_){} return [...CONFIG.KEYWORDS]; }
+function loadKeywords(){ try{ const s = localStorage.getItem("ncp_keywords"); if(s){ const a = JSON.parse(s); if(Array.isArray(a) && a.length) return a; } }catch(_){} return [...CONFIG.KEYWORDS]; }
 function saveKeywords(){ try{ localStorage.setItem("ncp_keywords", JSON.stringify(keywords)); }catch(_){} }
 let keywords = loadKeywords();
-function combinedQuery(){ return keywords.map(k => k.includes(" ") ? `"${k}"` : k).join(" OR "); }
+function combinedQuery(){ const ks = (keywords && keywords.length) ? keywords : CONFIG.KEYWORDS; return ks.map(k => k.includes(" ") ? `"${k}"` : k).join(" OR "); }
 function setActiveKeyword(node){ document.querySelectorAll("#keywordChips .chip").forEach(c=>c.classList.remove("active")); node.classList.add("active"); }
 
 function buildKeywordChips(){
